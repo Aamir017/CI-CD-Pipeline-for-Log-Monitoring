@@ -124,5 +124,5 @@ startSimulators(true);
 // Start server
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log(`Log monitor server listening on http://localhost:${PORT}`);
+  console.log(`Log monitor server listening on http://0.0.0.0:${PORT}`);
 });
