@@ -121,7 +121,8 @@ kubectl get pods
 ## Screenshots
 <img width="1919" height="910" alt="Screenshot 2025-08-10 185826" src="https://github.com/user-attachments/assets/33f6b90e-14f8-42ca-825b-035661972a7f" />
 <img width="1912" height="906" alt="Screenshot 2025-08-08 153633" src="https://github.com/user-attachments/assets/6eaea528-028d-436e-9515-ca30b9b53612" />
-![k](https://github.com/user-attachments/assets/27a42204-4be5-4735-8a34-3a7afb743c60)
+<img width="1912" height="906" alt="Screenshot 2025-08-08 153633" src="https://github.com/user-attachments/assets/529d3af3-9572-49c5-903d-2367cab948db" />
+
 
 
 --- 
