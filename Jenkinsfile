@@ -39,11 +39,6 @@ pipeline {
       }
     }
 
-    stage('Test (Optional)') {
-      steps {
-        echo "Run tests here (unit/integration) if available."
-      }
-    }
 
     stage('Push to DockerHub') {
       steps {
