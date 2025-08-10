@@ -1,0 +1,284 @@
+/* ===== Base Reset ===== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: "Segoe UI", Roboto, sans-serif;
+}
+
+body {
+  background: #101014;
+  color: #e6e6e6;
+  line-height: 1.4;
+}
+
+/* ===== Layout ===== */
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* ===== Header ===== */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: #181820;
+  border-bottom: 1px solid #2a2a35;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo {
+  background: #0078ff;
+  color: white;
+  font-weight: bold;
+  font-size: 20px;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+.sub {
+  font-size: 12px;
+  color: #999;
+}
+
+/* ===== Controls ===== */
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+select,
+input[type="number"] {
+  background: #1e1e28;
+  border: 1px solid #333;
+  color: #fff;
+  padding: 5px 8px;
+  border-radius: 4px;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background: #2e2e3c;
+  color: white;
+  transition: background 0.2s;
+}
+
+.btn:hover {
+  background: #3e3e4f;
+}
+
+.btn.primary {
+  background: #0078ff;
+}
+
+.btn.primary:hover {
+  background: #0068dd;
+}
+
+.btn.ghost {
+  background: transparent;
+  border: 1px solid #444;
+}
+
+/* ===== Status Light ===== */
+.status {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.status.online {
+  background: #004d1a;
+  color: #4cff8f;
+}
+
+.status.offline {
+  background: #4d0000;
+  color: #ff5e5e;
+}
+
+/* ===== Main ===== */
+.main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ===== Sidebar ===== */
+.sidebar {
+  width: 250px;
+  background: #181820;
+  border-right: 1px solid #2a2a35;
+  padding: 12px;
+  overflow-y: auto;
+}
+
+.card {
+  background: #1e1e28;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 14px;
+}
+
+.card h3 {
+  margin-bottom: 8px;
+  font-size: 15px;
+  color: #a0a0ff;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.stat {
+  background: #2a2a38;
+  padding: 6px;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.num {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.label {
+  font-size: 12px;
+  color: #aaa;
+}
+
+.services {
+  list-style: none;
+}
+
+.service-row {
+  padding: 6px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.service-row:hover {
+  background: #2a2a38;
+}
+
+.muted {
+  color: #777;
+}
+
+/* ===== Logs Section ===== */
+.logs {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #101014;
+}
+
+.logs-head {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 14px;
+  border-bottom: 1px solid #2a2a35;
+  background: #181820;
+}
+
+.log-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.log-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 10px;
+  border-bottom: 1px solid #2a2a35;
+}
+
+.log-item:hover {
+  background: #181820;
+}
+
+.left .service {
+  font-weight: bold;
+  color: #00bfff;
+}
+
+.left .message {
+  font-size: 13px;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.meta {
+  font-size: 12px;
+  color: #888;
+}
+
+/* ===== Badges ===== */
+.badge {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.badge.debug {
+  background: #2e2e3c;
+  color: #ccc;
+}
+
+.badge.info {
+  background: #005f99;
+  color: #8fd4ff;
+}
+
+.badge.warn {
+  background: #665500;
+  color: #ffeb80;
+}
+
+.badge.error {
+  background: #660000;
+  color: #ff8f8f;
+}
+
+/* ===== Scrollbar Styling ===== */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: #181820;
+}

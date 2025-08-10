@@ -1,0 +1,25 @@
+# Node / build
+node_modules/
+dist/
+build/
+
+# Logs and local env
+*.log
+.env
+*.tmp
+
+# OS / editor
+.DS_Store
+*.swp
+
+# Binaries and media (large files)
+*.zip
+*.tar.gz
+*.mp4
+*.mov
+*.iso
+
+# Terraform state
+*.tfstate
+*.tfstate.backup
+.terraform/

@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Log Monitoring Dashboard</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- React + ReactDOM + Babel (for JSX) -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Socket.IO client -->
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- App (JSX, compiled by Babel in browser) -->
+  <script type="text/babel">
+    const { useEffect, useState, useRef } = React;
+
+    function Badge({ level }) {
+      const cls = {
+        debug: 'badge debug',
+        info: 'badge info',
+        warn: 'badge warn',
+        error: 'badge error'
+      }[level] || 'badge info';
+      return <span className={cls}>{level.toUpperCase()}</span>;
+    }
+
+    function LogItem({ log }) {
+      return (
+        <div className="log-item" title={new Date(log.timestamp).toLocaleString()}>
+          <div className="left">
+            <div className="service">{log.service}</div>
+            <div className="message">{log.message}</div>
+          </div>
+          <div className="right">
+            <div className="meta">{new Date(log.timestamp).toLocaleTimeString()}</div>
+            <Badge level={log.level} />
+          </div>
+        </div>
+      );
+    }
+
+    function App() {
+      const [logs, setLogs] = useState([]);
+      const [socketConnected, setSocketConnected] = useState(false);
+      const [filterService, setFilterService] = useState('');
+      const [filterLevel, setFilterLevel] = useState('');
+      const [paused, setPaused] = useState(false);
+      const [autoScroll, setAutoScroll] = useState(true);
+      const [limit, setLimit] = useState(300);
+      const listRef = useRef(null);
+      const bufferRef = useRef([]); // buffer while paused
+      const socketRef = useRef(null);
+
+      useEffect(() => {
+        const socket = io();
+        socketRef.current = socket;
+        socket.on('connect', () => setSocketConnected(true));
+        socket.on('disconnect', () => setSocketConnected(false));
+
+        socket.on('log', (log) => {
+          if (paused) {
+            bufferRef.current.push(log);
+            // maintain buffer cap
+            if (bufferRef.current.length > 500) bufferRef.current.shift();
+            return;
+          }
+          setLogs(prev => {
+            const next = [...prev, log].slice(-MAX_LOGS);
+            return next;
+          });
+        });
+
+        socket.on('latest', (arr) => {
+          setLogs(arr || []);
+        });
+
+        // ask for latest logs
+        socket.emit('getLatest', limit);
+
+        return () => {
+          socket.disconnect();
+        };
+      }, []); // connect once
+
+      // cap of logs in UI
+      const MAX_LOGS = 2000;
+
+      useEffect(() => {
+        // autoscroll
+        if (autoScroll && listRef.current) {
+          listRef.current.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' });
+        }
+      }, [logs.length, autoScroll]);
+
+      useEffect(() => {
+        // if resumed, flush buffer
+        if (!paused && bufferRef.current.length > 0) {
+          setLogs(prev => {
+            const merged = [...prev, ...bufferRef.current].slice(-MAX_LOGS);
+            bufferRef.current = [];
+            return merged;
+          });
+        }
+      }, [paused]);
+
+      // derived list after filters
+      const services = Array.from(new Set(logs.map(l => l.service))).slice(0, 20);
+      const filtered = logs.filter(l => {
+        if (filterService && l.service !== filterService) return false;
+        if (filterLevel && l.level !== filterLevel) return false;
+        return true;
+      });
+
+      function clearLogs() {
+        setLogs([]);
+        bufferRef.current = [];
+      }
+
+      async function fetchLogs() {
+        try {
+          const res = await fetch(`/logs?limit=${limit}`);
+          const data = await res.json();
+          setLogs(data || []);
+        } catch (e) {
+          console.error(e);
+          alert('Failed to fetch logs');
+        }
+      }
+
+      async function pushRandomTest() {
+        const levels = ['debug', 'info', 'warn', 'error'];
+        await fetch('/logs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            service: 'manual-test',
+            level: levels[Math.floor(Math.random() * levels.length)],
+            message: 'Manual test log ' + Math.random().toString(36).slice(2,8)
+          })
+        });
+      }
+
+      return (
+        <div className="dashboard">
+          <header className="header">
+            <div className="brand">
+              <div className="logo">LOG</div>
+              <div>
+                <h1>Log Monitoring Dashboard</h1>
+                <div className="sub">Real-time logs • Socket.IO • Node.js</div>
+              </div>
+            </div>
+
+            <div className="controls">
+              <div className={`status ${socketConnected? 'online': 'offline'}`}>{socketConnected? 'online':'offline'}</div>
+              <select value={filterService} onChange={e=>setFilterService(e.target.value)}>
+                <option value="">All services</option>
+                {services.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+
+              <select value={filterLevel} onChange={e=>setFilterLevel(e.target.value)}>
+                <option value="">All levels</option>
+                <option value="debug">DEBUG</option>
+                <option value="info">INFO</option>
+                <option value="warn">WARN</option>
+                <option value="error">ERROR</option>
+              </select>
+
+              <label className="toggle">
+                <input type="checkbox" checked={autoScroll} onChange={e=>setAutoScroll(e.target.checked)} />
+                <span>Auto-scroll</span>
+              </label>
+
+              <button className="btn" onClick={()=>{ setPaused(p=>!p); }}>
+                {paused ? 'Resume' : 'Pause'}
+              </button>
+              <button className="btn ghost" onClick={clearLogs}>Clear</button>
+              <button className="btn ghost" onClick={fetchLogs}>Refresh</button>
+              <button className="btn primary" onClick={pushRandomTest}>Send Test</button>
+            </div>
+          </header>
+
+          <main className="main">
+            <aside className="sidebar">
+              <div className="card">
+                <h3>Summary</h3>
+                <div className="summary-grid">
+                  <div className="stat">
+                    <div className="num">{logs.length}</div>
+                    <div className="label">Total</div>
+                  </div>
+                  <div className="stat">
+                    <div className="num">{logs.filter(l=>l.level==='error').length}</div>
+                    <div className="label">Errors</div>
+                  </div>
+                  <div className="stat">
+                    <div className="num">{logs.filter(l=>l.level==='warn').length}</div>
+                    <div className="label">Warnings</div>
+                  </div>
+                  <div className="stat">
+                    <div className="num">{Array.from(new Set(logs.map(l=>l.service))).length}</div>
+                    <div className="label">Services</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="card">
+                <h3>Top Services</h3>
+                <ul className="services">
+                  {services.length === 0 ? <li className="muted">No services yet</li>
+                    : services.map(s => <li key={s} onClick={() => setFilterService(s)} className="service-row">{s}</li>)}
+                </ul>
+              </div>
+
+              <div className="card small">
+                <h3>Settings</h3>
+                <div className="setting-row">
+                  <label>Load limit</label>
+                  <input type="number" value={limit} min="50" max="1000" onChange={e=>setLimit(Number(e.target.value))}/>
+                </div>
+              </div>
+            </aside>
+
+            <section className="logs">
+              <div className="logs-head">
+                <div className="title">Live Logs</div>
+                <div className="muted">{filtered.length} shown</div>
+              </div>
+
+              <div className="log-list" ref={listRef}>
+                {filtered.length === 0 ? (
+                  <div className="empty">No logs — wait a moment or push <button className="inline" onClick={pushRandomTest}>Send Test</button></div>
+                ) : (
+                  filtered.map(l => <LogItem key={l.id} log={l} />)
+                )}
+              </div>
+            </section>
+          </main>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
