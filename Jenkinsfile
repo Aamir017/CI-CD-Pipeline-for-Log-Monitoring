@@ -15,7 +15,9 @@ pipeline {
 
   stages {
     stage('Checkout') {
-      steps { checkout scm }
+      steps { 
+        checkout scm 
+      }
     }
 
     stage('Set Build Variables') {
@@ -39,7 +41,6 @@ pipeline {
       }
     }
 
-
     stage('Push to DockerHub') {
       steps {
         withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDS_ID}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
@@ -54,7 +55,7 @@ pipeline {
         }
       }
     }
-
+  }
 
   post {
     success { echo "✅ Pipeline succeeded: ${IMAGE}:${IMAGE_TAG}" }
