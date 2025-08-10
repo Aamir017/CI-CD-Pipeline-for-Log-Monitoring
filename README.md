@@ -78,7 +78,7 @@ The pipeline automates:
 
 1️⃣ Clone Repository
 ```
-git clone <your-repo-url>
+git clone https://github.com/Aamir017/CI-CD-Pipeline-for-Log-Monitoring.git
 cd CI-CD-Pipeline-for-Log-Monitoring
 ```
 2️⃣ Build & Run Locally
