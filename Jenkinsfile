@@ -4,7 +4,6 @@ pipeline {
   environment {
     IMAGE = "aamir017/log-monitor"            // DockerHub repo
     DOCKER_CREDS_ID = "dockerhub-creds"       // Jenkins credentials (username/password)
-    KUBECONFIG_CRED_ID = "kubeconfig"         // Jenkins credentials (Secret File)
     PUSH_LATEST = true                        // change to false if you don't want 'latest'
   }
 
@@ -61,27 +60,6 @@ pipeline {
       }
     }
 
-    stage('Deploy to Kubernetes') {
-      steps {
-        withCredentials([file(credentialsId: "${KUBECONFIG_CRED_ID}", variable: 'KUBECONFIG_FILE')]) {
-          sh """
-            export KUBECONFIG=${KUBECONFIG_FILE}
-            if kubectl get deployment log-monitor >/dev/null 2>&1; then
-              kubectl set image deployment/log-monitor log-monitor=${IMAGE}:${IMAGE_TAG} --record
-            else
-              kubectl apply -f k8s/
-            fi
-            kubectl rollout status deployment/log-monitor --timeout=120s || {
-              echo "Rollout failed. Checking logs..."
-              kubectl describe deployment log-monitor
-              kubectl logs -l app=log-monitor --tail=50
-              exit 1
-            }
-          """
-        }
-      }
-    }
-  }
 
   post {
     success { echo "✅ Pipeline succeeded: ${IMAGE}:${IMAGE_TAG}" }
