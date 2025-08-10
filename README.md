@@ -79,12 +79,12 @@ The pipeline automates:
 1️⃣ Clone Repository
 ```
 git clone <your-repo-url>
-cd <your-repo-folder>
+cd CI-CD-Pipeline-for-Log-Monitoring
 ```
 2️⃣ Build & Run Locally
 ```
-docker build -t my-node-app .
-docker run -p 3000:3000 my-node-app
+docker build -t log-monitor .
+docker run -p 3000:3000 log-monitor
 ```
 Open http://localhost:3000 in your browser.
 
