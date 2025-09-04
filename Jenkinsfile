@@ -7,11 +7,7 @@ pipeline {
     PUSH_LATEST = true                        // change to false if you don't want 'latest'
   }
 
-  options {
-    timestamps()
-    ansiColor('xterm')
-    buildDiscarder(logRotator(numToKeepStr: '50'))
-  }
+
 
   stages {
     stage('Checkout') {
