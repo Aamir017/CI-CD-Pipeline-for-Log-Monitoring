@@ -41,6 +41,59 @@ pipeline {
       }
     }
 
+    // 🔹 New stage: DAST Scan with OWASP ZAP
+    stage('DAST - OWASP ZAP Baseline') {
+      steps {
+        sh '''
+          set -eux
+          mkdir -p reports && rm -f reports/zap_*
+
+          # Create a network so app + zap can talk
+          docker network create zapnet || true
+
+          # Run the app container
+          docker rm -f app-under-test || true
+          docker run -d --name app-under-test --network zapnet -p 3000:3000 ${IMAGE}:${IMAGE_TAG}
+
+          # Wait for app to be up
+          for i in $(seq 1 30); do
+            if docker run --rm --network zapnet curlimages/curl -fsS http://app-under-test:3000/ > /dev/null; then
+              echo "App is up"
+              break
+            fi
+            echo "Waiting for app..."
+            sleep 2
+          done
+
+          # Run ZAP Baseline Scan
+          docker run --rm --network zapnet \
+            -v "$PWD/reports:/zap/wrk:rw" \
+            ghcr.io/zaproxy/zaproxy:stable \
+            zap-baseline.py \
+              -t http://app-under-test:3000 \
+              -r /zap/wrk/zap_report.html \
+              -J /zap/wrk/zap_report.json \
+              -w /zap/wrk/zap_report.md \
+              -m 2 -a -s
+
+          EXIT=$?
+          echo "ZAP exit code: $EXIT"
+          # Fail build on FAIL (1) or error (3)
+          if [ "$EXIT" -eq 1 ] || [ "$EXIT" -eq 3 ]; then
+            echo "❌ DAST scan found issues"
+            exit 1
+          fi
+        '''
+      }
+      post {
+        always {
+          archiveArtifacts artifacts: 'reports/zap_report.*', allowEmptyArchive: true
+          sh 'docker rm -f app-under-test || true'
+          sh 'docker network rm zapnet || true'
+        }
+      }
+    }
+
     stage('Push to DockerHub') {
       steps {
         withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDS_ID}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
