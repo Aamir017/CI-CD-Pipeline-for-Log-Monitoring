@@ -7,8 +7,6 @@ pipeline {
     PUSH_LATEST = true                        // change to false if you don't want 'latest'
   }
 
-
-
   stages {
     stage('Checkout') {
       steps { 
@@ -37,7 +35,7 @@ pipeline {
       }
     }
 
-    // 🔹 New stage: DAST Scan with OWASP ZAP
+    // 🔹 DAST Scan with OWASP ZAP
     stage('DAST - OWASP ZAP Baseline') {
       steps {
         sh '''
@@ -61,9 +59,10 @@ pipeline {
             sleep 2
           done
 
-          # Run ZAP Baseline Scan
+          # Run ZAP Baseline Scan as Jenkins user
           docker run --rm --network zapnet \
             -v "$PWD/reports:/zap/wrk:rw" \
+            --user $(id -u):$(id -g) \
             ghcr.io/zaproxy/zaproxy:stable \
             zap-baseline.py \
               -t http://app-under-test:3000 \
